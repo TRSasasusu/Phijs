@@ -2,8 +2,26 @@
   <head>
     <script src="./iit.js"></script>
     <script>
-      iit = new IIT();
-      iit.calculate();
+      iit = new IIT([
+          "011",
+          "101",
+          "110",
+      ], [
+          "OR",
+          "AND",
+          "XOR",
+      ], "100");
     </script>
   </head>
 </html>
+<!--
+    this.graph_conns = [
+        "011",
+        "101",
+        "110",
+    ];
+    this.graph_kinds = [
+        "OR", "AND", "XOR",
+    ];
+    this.current_on = "100";
+-->
