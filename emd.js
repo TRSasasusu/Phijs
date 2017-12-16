@@ -64,8 +64,9 @@ var emd = function(wp, wq, d) {
     }
 
     return consts[0];
-    /*fs = [];
-    for(var i = 0; i < wp.length; ++i) {
-        fs.push(table[0].slice(i * wp.length, (i + 1) * wp.length));
-    }*/
-}
+};
+
+onmessage = function(e) {
+    postMessage(emd(e.data['wp'], e.data['wq'], e.data['d']));
+    close();
+};

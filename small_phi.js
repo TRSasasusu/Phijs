@@ -59,15 +59,6 @@ SmallPhi.prototype.calculate = function() {
         }
         return next;
     }
-    function calcDistance(a, b) {
-        var num = 0;
-        for(var i = 0; i < a.length; ++i) {
-            if(a != b) {
-                ++num;
-            }
-        }
-        return num;
-    }
     function cause_repartoire() {
         console.log(this);
         cause_rep = {}
@@ -93,6 +84,9 @@ SmallPhi.prototype.calculate = function() {
         }
 
         for(key in cause_rep) {
+            if(sum == 0) {
+                break;
+            }
             cause_rep[key] /= sum;
         }
 
@@ -101,60 +95,6 @@ SmallPhi.prototype.calculate = function() {
         if(!this.calc_emd) {
             postMessage(cause_rep);
         }
-
-        var wp = [];
-        var wq = [];
-        var keys = Object.keys(cause_rep);
-        for(key of keys) {
-            wp.push(cause_rep[key]);
-            wq.push(this.default_cause_rep[key]);
-        }
-        d = [];
-        for(var i = 0; i < wp.length; ++i) {
-            d.push([]);
-            for(var j = 0; j < wq.length; ++j) {
-                d[i].push(calcDistance(keys[i], keys[j]));
-            }
-        }
-
-        importScripts(this.emd_js);
-        var phi = emd(wp, wq, d);
-        postMessage(phi);
-
-        /*var a_rep = {}, b_rep = {};
-        if(Math.max.apply(null, Object.values(cause_rep)) < Math.max.apply(null, Object.values(this.default_cause_rep))) {
-            Object.keys(cause_rep),forEach(function(key) {
-                a_rep[key] = cause_rep[key];
-            });
-            Object.keys(this.default_cause_rep),forEach(function(key) {
-                b_rep[key] = this.default_cause_rep[key];
-            });
-        }
-        else {
-            Object.keys(cause_rep),forEach(function(key) {
-                b_rep[key] = cause_rep[key];
-            });
-            Object.keys(this.default_cause_rep),forEach(function(key) {
-                a_rep[key] = this.default_cause_rep[key];
-            });
-        }
-
-        var emd = 0;
-        for(var i = 0; i < this.current_on.length; ++i) {
-            for(b_key in b_rep) {
-                var a_keys = []
-                for(a_key in a_rep) {
-                    if(i != calcDistance(b_key, a_key)) {
-                        continue;
-                    }
-                    a_keys.push(a_key);
-                }
-                var value = Math.max(b_rep[b_key] / a_keys.length, a_rep
-                for(var j = 0; j < a_keys.length; ++j) {
-                    
-                }
-            }
-        }*/
     }
     cause_repartoire.call(this);
 };
@@ -162,4 +102,5 @@ SmallPhi.prototype.calculate = function() {
 onmessage = function(e) {
     var small_phi = new SmallPhi(e.data['graph_conns'], e.data['graph_kinds'], e.data['current_on'], e.data['calc_emd'], e.data['emd_js']);
     small_phi.calculate();
-}
+    close();
+};
