@@ -1,12 +1,8 @@
-var SmallPhi = function(graph_conns, graph_kinds, current_on, calc_emd, default_cause_rep, emd_js) {
+var SmallPhi = function(graph_conns, graph_kinds, current_on, used_nodes) {
     this.graph_conns = graph_conns;
     this.graph_kinds = graph_kinds;
     this.current_on = current_on;
-
-    this.calc_emd = calc_emd;
-    this.default_cause_rep = default_cause_rep;
-
-    this.emd_js = emd_js;
+    this.used_nodes = used_nodes;
 };
 
 SmallPhi.prototype.calculate = function() {
@@ -69,12 +65,22 @@ SmallPhi.prototype.calculate = function() {
             while(past_on.length < this.current_on.length) {
                 past_on = '0' + past_on;
             }
-            console.log(past_on);
+            //console.log(past_on);
 
             var next = calcNext.call(this, past_on);
-            console.log("next: " + next);
+            //console.log("next: " + next);
 
-            if(next == this.current_on) {
+            var is_same = true;
+            for(var j = 0; j < next.length; ++j) {
+                if(this.used_nodes[j] == 0) {
+                    continue;
+                }
+                if(next[j] != this.current_on[j]) {
+                    is_same = false;
+                    break;
+                }
+            }
+            if(is_same) {
                 cause_rep[past_on] = 1;
                 ++sum;
             }
@@ -92,15 +98,13 @@ SmallPhi.prototype.calculate = function() {
 
         console.log(cause_rep);
 
-        if(!this.calc_emd) {
-            postMessage(cause_rep);
-        }
+        postMessage(cause_rep);
     }
     cause_repartoire.call(this);
 };
 
 onmessage = function(e) {
-    var small_phi = new SmallPhi(e.data['graph_conns'], e.data['graph_kinds'], e.data['current_on'], e.data['calc_emd'], e.data['emd_js']);
+    var small_phi = new SmallPhi(e.data['graph_conns'], e.data['graph_kinds'], e.data['current_on'], e.data['used_nodes']);
     small_phi.calculate();
     close();
 };

@@ -15,7 +15,7 @@ var IIT = function(graph_conns, graph_kinds, current_on, small_phi_js, emd_js) {
 
     var main_worker = new Worker(small_phi_js);
     main_worker.addEventListener('message', function(msg) {
-        console.log(msg.data);
+        //console.log(msg.data);
 
         var max_number = parseInt(this.current_on.replace(/0/g, '1'), 2);
         var left_group_number = 0;
@@ -94,22 +94,40 @@ var IIT = function(graph_conns, graph_kinds, current_on, small_phi_js, emd_js) {
                 graph_conns: partition_conns[0],
                 graph_kinds: this.graph_kinds,
                 current_on: this.current_on,
-                calc_emd: false,
+                used_nodes: right_group,
             });
             partition_worker[1].postMessage({
                 graph_conns: partition_conns[1],
                 graph_kinds: this.graph_kinds,
                 current_on: this.current_on,
-                calc_emd: false,
+                used_nodes: right_group.replace(/[01]/g, function(match) {
+                    if(match == '0') {
+                        return '1';
+                    }
+                    return '0';
+                }),
             });
 
             ++right_group_number;
         };
 
         var calcCausePhi = function(partition_cause_rep) {
-            var cause_rep = [].concat(partition_cause_rep[0]).map(function(value, index) {
-                return value + partition_cause_rep[1][index];
-            });
+            var sum = 0;
+            var cause_rep = {};
+            for(key in partition_cause_rep[0]) {
+                var tmp = partition_cause_rep[0][key] + partition_cause_rep[1][key];
+                sum += tmp;
+                cause_rep[key] = tmp;
+            }
+            if(sum == 0) {
+                partitionFunc.call(this);
+                return;
+            }
+            for(key in cause_rep) {
+                cause_rep[key] /= sum;
+            }
+
+            console.log(cause_rep);
 
             var wp = [];
             var wq = [];
@@ -128,6 +146,7 @@ var IIT = function(graph_conns, graph_kinds, current_on, small_phi_js, emd_js) {
 
             var emd_worker = new Worker(emd_js);
             emd_worker.addEventListener('message', function(emd_msg) {
+                console.log(emd_msg.data);
                 if(this.mip_cause_phi == null || this.mip_cause_phi > emd_msg.data) {
                     this.mip_cause_phi = emd_msg.data;
                 }
@@ -141,38 +160,12 @@ var IIT = function(graph_conns, graph_kinds, current_on, small_phi_js, emd_js) {
         };
 
         partitionFunc.call(this);
-
-        /*
-        var row = 1, col = 0;
-        var partition_func = function(msg) {
-            while(this.graph_conns[row][col] == 0) {
-                ++col;
-                if(col == row) {
-                    col = 0;
-                    ++row;
-                }
-
-                if(row == this.current_on.length) {
-                    // TODO
-                }
-            }
-
-            var partition_worker = new Worker(small_phi_js);
-            partition_worker.addEventListener('message', partition_func.bind(this));
-            partition_worker.postMessage({
-                graph_conns: this.graph_conns,
-                graph_kinds: this.graph_kinds,
-                current_on: this.current_on,
-                calc_emd: true,
-                emd_js: emd_js,
-            });
-        };
-        */
     }.bind(this));
+
     main_worker.postMessage({
         graph_conns: this.graph_conns,
         graph_kinds: this.graph_kinds,
         current_on: this.current_on,
-        calc_emd: false,
+        used_nodes: this.current_on.replace(/0/g, '1'),
     });
 };
