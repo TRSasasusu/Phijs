@@ -1,4 +1,4 @@
-var IIT = function(graph_conns, graph_kinds, current_on, small_phi_js, emd_js) {
+var IIT = function(graph_conns, graph_kinds, current_on, callback, small_phi_js, emd_js) {
     this.graph_conns = graph_conns;
     this.graph_kinds = graph_kinds;
     this.current_on = current_on;
@@ -12,6 +12,10 @@ var IIT = function(graph_conns, graph_kinds, current_on, small_phi_js, emd_js) {
 
     this.mip_cause_phi = null;
     this.end = false;
+
+    if(callback == undefined) {
+        callback = null;
+    }
 
     var main_worker = new Worker(small_phi_js);
     main_worker.addEventListener('message', function(msg) {
@@ -33,6 +37,9 @@ var IIT = function(graph_conns, graph_kinds, current_on, small_phi_js, emd_js) {
             if(right_group_number == max_number && left_group_number == max_number) {
                 this.end = true;
                 console.log('phi^MIP_cause = ' + this.mip_cause_phi);
+                if(callback != null) {
+                    callback(this.mip_cause_phi);
+                }
                 return;
             }
             if(right_group_number == max_number + 1) {

@@ -1,27 +1,60 @@
-<html>
+<html lang="en">
   <head>
+    <title>IIT 2.0 with EMD</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+      #iitNetwork {
+        width: 600px;
+        height: 400px;
+        border: 1px solid lightgray;
+      }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
     <script src="./iit.js"></script>
-    <script>
-      iit = new IIT([
-          "011",
-          "101",
-          "110",
-      ], [
-          "OR",
-          "AND",
-          "XOR",
-      ], "100");
-    </script>
   </head>
-</html>
-<!--
-    this.graph_conns = [
+  <body>
+    <h1>Integrated Information Theory 2.0 with Earth Mover's Distance(EMD)</h1>
+    <div id="iitNetwork"></div>
+    <div id="mipPhi"></div>
+    <script>
+      var nodes = new vis.DataSet([
+        {id: 1, label: 'A\nOR', color: 'rgb(255,255,0)'},
+        {id: 2, label: 'B\nAND', color: 'rgb(255,255,255)'},
+        {id: 3, label: 'C\nXOR', color: 'rgb(255,255,255)'},
+      ]);
+      var edges = new vis.DataSet([
+        {from: 1, to: 2, arrows: 'to, from', color: {color: 'black'}},
+        {from: 2, to: 3, arrows: 'to, from', color: {color: 'black'}},
+        {from: 3, to: 1, arrows: 'to, from', color: {color: 'black'}},
+      ]);
+
+      var container = document.getElementById('iitNetwork');
+      var data = {
+        nodes: nodes,
+        edges: edges,
+      };
+      var options = {};
+      var network = new vis.Network(container, data, options);
+
+
+      iit = new IIT([
         "011",
         "101",
         "110",
-    ];
-    this.graph_kinds = [
-        "OR", "AND", "XOR",
-    ];
-    this.current_on = "100";
--->
+      ], [
+        "OR",
+        "AND",
+        "XOR",
+      ], "100", function(mip_cause_phi) {
+        var mip_phi = document.getElementById('mipPhi');
+        mip_phi.innerHTML = '$${\\Huge \\varphi^{\\rm MIP}_{\\rm cause}=' + mip_cause_phi + '}$$';
+        MathJax.Hub.Queue(['Typeset', MathJax.Hub, 'mipPhi']);
+      });
+    </script>
+  </body>
+</html>
