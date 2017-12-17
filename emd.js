@@ -46,19 +46,9 @@ var emd = function(wp, wq, d) {
         consts.push(wq[i]);
     }
 
-    /*table.push(Array.apply(null, Array(length + wp.length *)).map(function(value) {
-        if(
-        return 1;
-    }));
-    consts.push(wp.reduce(function(prev, curr) { return prev + curr; }));*/
-
     var jj = 0;
     var state = 0;
     while(true) {
-        //console.log(state);
-        //console.log(table);
-        //console.log(consts);
-
         var min_col_index;
 
         if(state == 0) {
@@ -89,16 +79,6 @@ var emd = function(wp, wq, d) {
             }
         }
         if(state == 2) {
-            /*if(wp.findIndex(function(value) { return value == 0.25; }) != -1) {
-    console.log(table);
-    console.log(consts);
-            }*/
-            /*min_col_index = table[0].findIndex(function(value, index) {
-                return value < 0;
-            });
-            if(min_col_index == -1) {
-                break;
-            }*/
             var min_value = Math.min(...table[0]);
             if(min_value >= 0) {
                 for(var i = 1; i < table.length; ++i) {
@@ -175,15 +155,6 @@ var emd = function(wp, wq, d) {
 
 
         var min_divided_const = null;
-        /*if(table[1][min_col_index] == 0) {
-            min_divided_const = null;
-        }
-        else {
-            min_divided_const = consts[1] / table[1][min_col_index];
-            if(min_divided_const < 0) {
-                min_divided_const = null;
-            }
-        }*/
         var min_row_index = null;
         for(var i = (state == 2 ? 1 : 2); i < table.length; ++i) {
             if(table[i][min_col_index] == 0) {
@@ -199,9 +170,6 @@ var emd = function(wp, wq, d) {
                 if(state == 1) {
                     break;
                 }
-                /*if(tmp < 0) {
-                    break;
-                }*/
             }
         }
         if(min_divided_const == null) {
@@ -229,18 +197,14 @@ var emd = function(wp, wq, d) {
             consts[i] -= coefficient * consts[min_row_index];
         }
         ++jj;
-        if(jj > 80) {
+        if(jj > 1000) {
             console.log(table);
             console.log(consts);
-            throw new Error('hogehoge~');
+            throw new Error('Maybe, its loop cannot end.');
             break;
         }
     }
 
-    /*if(-consts[0] - 0.33333 < 0.0001) {
-            console.log(table);
-            console.log(consts);
-    }*/
     return -consts[0];
 };
 

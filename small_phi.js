@@ -56,7 +56,7 @@ SmallPhi.prototype.calculate = function() {
         return next;
     }
     function cause_repartoire() {
-        console.log(this);
+        //console.log(this);
         cause_rep = {}
         max_number = parseInt(this.current_on.replace(/0/g, '1'), 2);
         sum = 0;
@@ -96,7 +96,7 @@ SmallPhi.prototype.calculate = function() {
             cause_rep[key] /= sum;
         }
 
-        console.log(cause_rep);
+        //console.log(cause_rep);
 
         postMessage(cause_rep);
     }
