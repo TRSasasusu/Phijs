@@ -23,7 +23,7 @@ var IIT = function(graph_conns, graph_kinds, current_on, small_phi_js, emd_js) {
         function calcDistance(a, b) {
             var num = 0;
             for(var i = 0; i < a.length; ++i) {
-                if(a != b) {
+                if(a[i] != b[i]) {
                     ++num;
                 }
             }
