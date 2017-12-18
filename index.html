@@ -19,42 +19,192 @@
   </head>
   <body>
     <h1>Integrated Information Theory 2.0 with Earth Mover's Distance(EMD)</h1>
+    <input type="button" value="Calculate!" onclick="onClickCalculate();" />
     <div id="iitNetwork"></div>
+    <pre id="eventSpan"></pre>
     <div id="mipPhi"></div>
     <script>
       var nodes = new vis.DataSet([
-        {id: 1, label: 'A\nOR', color: 'rgb(255,255,0)'},
-        {id: 2, label: 'B\nAND', color: 'rgb(255,255,255)'},
-        {id: 3, label: 'C\nXOR', color: 'rgb(255,255,255)'},
+        {id: 1, label: '1\nOR\nON', color: 'rgb(255,255,0)'},
+        {id: 2, label: '2\nAND\nOFF', color: 'rgb(255,255,255)'},
+        {id: 3, label: '3\nXOR\nOFF', color: 'rgb(255,255,255)'},
       ]);
       var edges = new vis.DataSet([
         {from: 1, to: 2, arrows: 'to, from', color: {color: 'black'}},
         {from: 2, to: 3, arrows: 'to, from', color: {color: 'black'}},
         {from: 3, to: 1, arrows: 'to, from', color: {color: 'black'}},
       ]);
+      var id = 4;
 
       var container = document.getElementById('iitNetwork');
       var data = {
         nodes: nodes,
         edges: edges,
       };
-      var options = {};
+      var options = {
+        manipulation: {
+          enabled: true,
+          addNode: function(nodeData, callback) {
+              nodeData.label = (id++) + '\nOR\nOFF';
+              nodeData.color = 'rgb(255,255,255)';
+              callback(nodeData);
+          },
+          addEdge: function(edgeData, callback) {
+              edgeData.arrows = 'to, from';
+              edgeData.color = {color: 'black'}
+              callback(edgeData);
+          },
+        }
+      };
       var network = new vis.Network(container, data, options);
 
+      function onClickCalculate() {
+        var graph_conns = [];
+        var graph_kinds = [];
+        var current_on = '';
+        var edge_ids = edges.getIds();
+        var node_ids = nodes.getIds();
 
-      iit = new IIT([
-        "011",
-        "101",
-        "110",
-      ], [
-        "OR",
-        "AND",
-        "XOR",
-      ], "100", function(mip_cause_phi) {
-        var mip_phi = document.getElementById('mipPhi');
-        mip_phi.innerHTML = '$${\\Huge \\varphi^{\\rm MIP}_{\\rm cause}=' + mip_cause_phi + '}$$';
-        MathJax.Hub.Queue(['Typeset', MathJax.Hub, 'mipPhi']);
+        function getIndexOfNode(id) {
+          for(var i = 0; i < node_ids.length; ++i) {
+            if(node_ids[i] == id) {
+              return i;
+            }
+          }
+          return -1;
+        }
+
+        for(var i = 0; i < node_ids.length; ++i) {
+          graph_conns.push('');
+          for(var j = 0; j < node_ids.length; ++j) {
+            graph_conns[i] += '0';
+          }
+        }
+
+        for(id of edge_ids) {
+          var edge = edges.get(id);
+          var from_index = getIndexOfNode(edge.from);
+          var to_index = getIndexOfNode(edge.to);
+          graph_conns[from_index] = graph_conns[from_index].substring(0, to_index) + 1 + graph_conns[from_index].substring(to_index + 1);
+          graph_conns[to_index] = graph_conns[to_index].substring(0, from_index) + 1 + graph_conns[to_index].substring(from_index + 1);
+          //console.log('(' + from_index + ', ' + to_index + ')');
+        }
+
+        for(id of node_ids) {
+          var node = nodes.get(id);
+          split_labels = node.label.split('\n');
+          graph_kinds.push(split_labels[1]);
+          current_on += split_labels[2] == 'ON' ? 1 : 0;
+        }
+
+        //console.log(graph_conns);
+        //console.log(graph_kinds);
+        //console.log(current_on);
+
+        /*iit = new IIT([
+          "011",
+          "101",
+          "110",
+        ], [
+          "OR",
+          "AND",
+          "XOR",
+        ], "100", function(mip_cause_phi) {*/
+        iit = new IIT(graph_conns, graph_kinds, current_on, function(mip_cause_phi) {
+          var mip_phi = document.getElementById('mipPhi');
+          mip_phi.innerHTML = '$${\\Huge \\varphi^{\\rm MIP}_{\\rm cause}=' + mip_cause_phi + '}$$';
+          MathJax.Hub.Queue(['Typeset', MathJax.Hub, 'mipPhi']);
+        });
+      }
+
+      network.on("click", function (params) {
+        var nodeId = this.getNodeAt(params.pointer.DOM);
+        if(nodeId == undefined) {
+          return;
+        }
+
+        split_labels = nodes.get(nodeId).label.split('\n');
+        if(split_labels[2] == 'OFF') {
+          nodes.update({id: nodeId, label: split_labels[0] + '\n' + split_labels[1] + '\n' + 'ON', color: 'rgb(255,255,0)'});
+        }
+        else if(split_labels[1] == 'OR') {
+          nodes.update({id: nodeId, label: split_labels[0] + '\n' + 'AND' + '\n' + 'OFF', color: 'rgb(255,255,255)'});
+        }
+        else if(split_labels[1] == 'AND') {
+          nodes.update({id: nodeId, label: split_labels[0] + '\n' + 'XOR' + '\n' + 'OFF', color: 'rgb(255,255,255)'});
+        }
+        else if(split_labels[1] == 'XOR') {
+          nodes.update({id: nodeId, label: split_labels[0] + '\n' + 'OR' + '\n' + 'OFF', color: 'rgb(255,255,255)'});
+        }
       });
+   /*   network.on("click", function (params) {
+        params.event = "[original event]";
+        document.getElementById('eventSpan').innerHTML = '<h2>Click event:</h2>' + JSON.stringify(params, null, 4);
+        console.log('click event, getNodeAt returns: ' + this.getNodeAt(params.pointer.DOM));
+    });
+    network.on("doubleClick", function (params) {
+        params.event = "[original event]";
+        document.getElementById('eventSpan').innerHTML = '<h2>doubleClick event:</h2>' + JSON.stringify(params, null, 4);
+    });
+    network.on("oncontext", function (params) {
+        params.event = "[original event]";
+        document.getElementById('eventSpan').innerHTML = '<h2>oncontext (right click) event:</h2>' + JSON.stringify(params, null, 4);
+    });
+    network.on("dragStart", function (params) {
+        // There's no point in displaying this event on screen, it gets immediately overwritten
+        params.event = "[original event]";
+        console.log('dragStart Event:', params);
+        console.log('dragStart event, getNodeAt returns: ' + this.getNodeAt(params.pointer.DOM));
+    });
+    network.on("dragging", function (params) {
+        params.event = "[original event]";
+        document.getElementById('eventSpan').innerHTML = '<h2>dragging event:</h2>' + JSON.stringify(params, null, 4);
+    });
+    network.on("dragEnd", function (params) {
+        params.event = "[original event]";
+        document.getElementById('eventSpan').innerHTML = '<h2>dragEnd event:</h2>' + JSON.stringify(params, null, 4);
+        console.log('dragEnd Event:', params);
+        console.log('dragEnd event, getNodeAt returns: ' + this.getNodeAt(params.pointer.DOM));
+    });
+    network.on("zoom", function (params) {
+        document.getElementById('eventSpan').innerHTML = '<h2>zoom event:</h2>' + JSON.stringify(params, null, 4);
+    });
+    network.on("showPopup", function (params) {
+        document.getElementById('eventSpan').innerHTML = '<h2>showPopup event: </h2>' + JSON.stringify(params, null, 4);
+    });
+    network.on("hidePopup", function () {
+        console.log('hidePopup Event');
+    });
+    network.on("select", function (params) {
+        console.log('select Event:', params);
+    });
+    network.on("selectNode", function (params) {
+        console.log('selectNode Event:', params);
+    });
+    network.on("selectEdge", function (params) {
+        console.log('selectEdge Event:', params);
+    });
+    network.on("deselectNode", function (params) {
+        console.log('deselectNode Event:', params);
+    });
+    network.on("deselectEdge", function (params) {
+        console.log('deselectEdge Event:', params);
+    });
+    network.on("hoverNode", function (params) {
+        console.log('hoverNode Event:', params);
+    });
+    network.on("hoverEdge", function (params) {
+        console.log('hoverEdge Event:', params);
+    });
+    network.on("blurNode", function (params) {
+        console.log('blurNode Event:', params);
+    });
+    network.on("blurEdge", function (params) {
+        console.log('blurEdge Event:', params);
+    });
+*/
+
+
     </script>
   </body>
 </html>
