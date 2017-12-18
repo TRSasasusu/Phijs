@@ -1,4 +1,4 @@
-var IIT = function(graph_conns, graph_kinds, current_on, end_callback, main_rep_callback, small_phi_js, emd_js) {
+var IIT = function(graph_conns, graph_kinds, current_on, end_callback, main_rep_callback, part_rep_callback, small_phi_js, emd_js) {
     this.graph_conns = graph_conns;
     this.graph_kinds = graph_kinds;
     this.current_on = current_on;
@@ -152,10 +152,18 @@ var IIT = function(graph_conns, graph_kinds, current_on, end_callback, main_rep_
 
             var emd_worker = new Worker(emd_js);
             emd_worker.addEventListener('message', function(emd_msg) {
-                console.log(emd_msg.data);
-                if(this.mip_cause_phi == null || this.mip_cause_phi > emd_msg.data) {
-                    this.mip_cause_phi = emd_msg.data;
+                var phi = Math.round(emd_msg.data * 1000000) / 1000000;
+                console.log(phi);
+                is_mip_updated = false;
+                if(this.mip_cause_phi == null || this.mip_cause_phi > phi) {
+                    this.mip_cause_phi = phi;
+                    is_mip_updated = true;
                 }
+
+                if(part_rep_callback != undefined) {
+                    part_rep_callback(cause_rep, phi, this.mip_cause_phi, is_mip_updated, (right_group_number + (left_group_number * max_number)) / ((max_number + 1) * (max_number)));
+                }
+
                 partitionFunc.call(this);
             }.bind(this));
             emd_worker.postMessage({

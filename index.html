@@ -23,6 +23,14 @@
         height: 300px;
         border: 1px solid blue;
       }
+      #partRepBox {
+        width: 600px;
+        height: 300px;
+        border: 1px solid red;
+      }
+      #progress {
+        font-family: Consolas, 'Courier New', Courier, Monaco, monospace;
+      }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
@@ -35,10 +43,13 @@
       <h1>Integrated Information Theory 2.0 with Earth Mover's Distance(EMD)</h1>
       <input type="button" value="Calculate!" onclick="onClickCalculate();" />
       <div id="iitNetwork"></div>
-      <pre id="eventSpan"></pre>
+      <div id="progress"></div>
       <div id="mipPhi"></div>
       <div id="mainRepBox">
         <canvas id="mainCauseRepertoire"></canvas>
+      </div>
+      <div id="partRepBox">
+        <canvas id="partCauseRepertoire"></canvas>
       </div>
     </div>
     <script>
@@ -119,6 +130,17 @@
         //console.log(graph_kinds);
         //console.log(current_on);
 
+        document.getElementById('mipPhi').innerHTML = '';
+        bar_graph_option = {
+          scales: {
+            yAxes : [{
+              ticks: {
+                min: 0,
+                max: 1,
+              }
+            }]
+          }
+        };
         /*iit = new IIT([
           "011",
           "101",
@@ -135,10 +157,7 @@
         }, function(main_rep) {
           var ctx = document.getElementById('mainCauseRepertoire').getContext('2d');
           var chart = new Chart(ctx, {
-            // The type of chart we want to create
             type: 'bar',
-
-            // The data for our dataset
             data: {
               labels: Object.keys(main_rep),
               datasets: [{
@@ -148,18 +167,37 @@
                 data: Object.values(main_rep),
               }]
             },
-
-            // Configuration options go here
-            options: {
-              scales: {
-                yAxes : [{
-                  ticks: {
-                    min: 0,
-                    max: 1,
-                  }
-                }]
-              }
+            options: bar_graph_option,
+          });
+        }, function(part_rep, part_cause_phi, mip_cause_phi, is_mip_updated, progress) {
+          var progress_bar = document.getElementById('progress');
+          progress_bar.innerHTML = Math.round(progress * 100) + '% [';
+          for(var i = 0; i < 60; ++i) {
+            if(i <= progress * 60) {
+              progress_bar.innerHTML += '=';
             }
+            else {
+              progress_bar.innerHTML += '.';
+            }
+          }
+          progress_bar.innerHTML += ']';
+
+          if(!is_mip_updated) {
+            return;
+          }
+          var ctx = document.getElementById('partCauseRepertoire').getContext('2d');
+          var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: Object.keys(part_rep),
+              datasets: [{
+                label: "MIP Cause Repertoire",
+                backgroundColor: 'rgb(0, 0, 0)',
+                borderColor: 'rgb(0, 0, 0)',
+                data: Object.values(part_rep),
+              }]
+            },
+            options: bar_graph_option,
           });
         });
       }
