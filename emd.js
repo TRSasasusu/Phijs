@@ -1,5 +1,5 @@
 // EMD for IIT.
-var emd = function(wp, wq, d) {
+var emd = function(wp, wq, d, use_subscript) {
     var length = d.length * d[0].length;
     var table = [Array.apply(null, Array(length + wp.length * 2)).map(function(value, index) {
         if(index >= length) {
@@ -79,8 +79,20 @@ var emd = function(wp, wq, d) {
             }
         }
         if(state == 2) {
-            var min_value = Math.min(...table[0]);
-            if(min_value >= 0) {
+            var min_value;
+            var is_end = false;
+            if(!use_subscript) {
+                min_value = Math.min(...table[0]);
+                min_col_index = table[0].indexOf(min_value);
+                is_end = min_value >= 0;
+            }
+            else {
+                min_col_index = table[0].findIndex(function(value) {
+                    return value < 0;
+                });
+                is_end = min_col_index == -1;
+            }
+            if(is_end) {
                 for(var i = 1; i < table.length; ++i) {
                     var post_const = consts[0] - consts[i];
                     if(post_const >= consts[0]) {
@@ -123,8 +135,6 @@ var emd = function(wp, wq, d) {
                 }
                 break;
             }
-
-            min_col_index = table[0].indexOf(min_value);
         }
         /*min_col_index = table[0].findIndex(function(value) { return value > 0; });
         if(min_col_index == -1) {
@@ -200,6 +210,9 @@ var emd = function(wp, wq, d) {
         if(jj > 1000) {
             console.log(table);
             console.log(consts);
+            if(!use_subscript) {
+                return emd(wp, wq, d, true);
+            }
             throw new Error('Maybe, its loop cannot end.');
             break;
         }
@@ -209,6 +222,11 @@ var emd = function(wp, wq, d) {
 };
 
 onmessage = function(e) {
-    postMessage(emd(e.data['wp'], e.data['wq'], e.data['d']));
+    try {
+        postMessage(emd(e.data['wp'], e.data['wq'], e.data['d'], false));
+    }
+    catch(e) {
+        postMessage(null);
+    }
     close();
 };

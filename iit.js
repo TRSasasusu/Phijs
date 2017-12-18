@@ -1,4 +1,4 @@
-var IIT = function(graph_conns, graph_kinds, current_on, end_callback, main_rep_callback, part_rep_callback, small_phi_js, emd_js) {
+var IIT = function(graph_conns, graph_kinds, current_on, end_callback, main_rep_callback, part_rep_callback, error_callback, small_phi_js, emd_js) {
     this.graph_conns = graph_conns;
     this.graph_kinds = graph_kinds;
     this.current_on = current_on;
@@ -152,6 +152,14 @@ var IIT = function(graph_conns, graph_kinds, current_on, end_callback, main_rep_
 
             var emd_worker = new Worker(emd_js);
             emd_worker.addEventListener('message', function(emd_msg) {
+                if(emd_msg.data == null) {
+                    if(error_callback != undefined) {
+                        error_callback('Error: Failed to calculate EMD...');
+                    }
+                    partitionFunc.call(this);
+                    return;
+                }
+
                 var phi = Math.round(emd_msg.data * 1000000) / 1000000;
                 console.log(phi);
                 is_mip_updated = false;

@@ -31,6 +31,9 @@
       #progress {
         font-family: Consolas, 'Courier New', Courier, Monaco, monospace;
       }
+      #errorMsg {
+        color: red;
+      }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
@@ -41,6 +44,7 @@
   <body>
     <div id="container">
       <h1>Integrated Information Theory 2.0 with Earth Mover's Distance(EMD)</h1>
+      <div id="errorMsg"></div>
       <input type="button" value="Calculate!" onclick="onClickCalculate();" />
       <div id="iitNetwork"></div>
       <div id="progress"></div>
@@ -63,7 +67,7 @@
         {from: 2, to: 3, arrows: 'to, from', color: {color: 'black'}},
         {from: 3, to: 1, arrows: 'to, from', color: {color: 'black'}},
       ]);
-      var id = 4;
+      var labeled_id = 4;
 
       var container = document.getElementById('iitNetwork');
       var data = {
@@ -74,7 +78,7 @@
         manipulation: {
           enabled: true,
           addNode: function(nodeData, callback) {
-              nodeData.label = (id++) + '\nOR\nOFF';
+              nodeData.label = (labeled_id++) + '\nOR\nOFF';
               nodeData.color = 'rgb(255,255,255)';
               callback(nodeData);
           },
@@ -131,6 +135,7 @@
         //console.log(current_on);
 
         document.getElementById('mipPhi').innerHTML = '';
+        document.getElementById('errorMsg').innerHTML = '';
         bar_graph_option = {
           scales: {
             yAxes : [{
@@ -204,6 +209,8 @@
             },
             options: bar_graph_option,
           });
+        }, function(error_msg) {
+          document.getElementById('errorMsg').innerHTML += '<br />' + error_msg;
         });
       }
 
