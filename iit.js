@@ -32,13 +32,16 @@ var IIT = function(graph_conns, graph_kinds, current_on, end_callback, main_rep_
             }
             return num;
         }
+        var endFunc = function() {
+            this.end = true;
+            console.log('phi^MIP_cause = ' + this.mip_cause_phi);
+            if(end_callback != undefined) {
+                end_callback(this.mip_cause_phi);
+            }
+        }
         var partitionFunc = function() {
             if(right_group_number == max_number && left_group_number == max_number) {
-                this.end = true;
-                console.log('phi^MIP_cause = ' + this.mip_cause_phi);
-                if(end_callback != undefined) {
-                    end_callback(this.mip_cause_phi);
-                }
+                endFunc.call(this);
                 return;
             }
             if(right_group_number == max_number + 1) {
@@ -168,8 +171,18 @@ var IIT = function(graph_conns, graph_kinds, current_on, end_callback, main_rep_
                     is_mip_updated = true;
                 }
 
+                var progress = (right_group_number + (left_group_number * max_number)) / ((max_number + 1) * (max_number));
+                if(this.mip_cause_phi == 0) {
+                    progress = 1;
+                }
+
                 if(part_rep_callback != undefined) {
-                    part_rep_callback(cause_rep, phi, this.mip_cause_phi, is_mip_updated, (right_group_number + (left_group_number * max_number)) / ((max_number + 1) * (max_number)));
+                    part_rep_callback(cause_rep, phi, this.mip_cause_phi, is_mip_updated, progress);
+                }
+
+                if(this.mip_cause_phi == 0) {
+                    endFunc.call(this);
+                    return;
                 }
 
                 partitionFunc.call(this);
