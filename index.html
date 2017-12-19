@@ -161,6 +161,14 @@
           mip_phi.innerHTML = '$${\\Huge \\varphi^{\\rm MIP}_{\\rm cause}=' + mip_cause_phi + '}$$';
           MathJax.Hub.Queue(['Typeset', MathJax.Hub, 'mipPhi']);
         }, function(main_rep) {
+          var main_rep_box = document.getElementById('mainRepBox');
+          main_rep_box.removeChild(document.getElementById('mainCauseRepertoire'));
+
+          var main_cause_repertoire = document.createElement('canvas');
+          main_cause_repertoire.setAttribute('id', 'mainCauseRepertoire');
+          main_rep_box.appendChild(main_cause_repertoire);
+          var ctx = main_cause_repertoire.getContext('2d');
+
           var ctx = document.getElementById('mainCauseRepertoire').getContext('2d');
           var chart = new Chart(ctx, {
             type: 'bar',
@@ -196,7 +204,14 @@
           mip_phi.innerHTML = '$${\\huge \\varphi^{\\rm MIP}_{\\rm cause}=' + mip_cause_phi + '}$$';
           MathJax.Hub.Queue(['Typeset', MathJax.Hub, 'mipPhi']);
 
-          var ctx = document.getElementById('partCauseRepertoire').getContext('2d');
+          var part_rep_box = document.getElementById('partRepBox');
+          part_rep_box.removeChild(document.getElementById('partCauseRepertoire'));
+
+          var part_cause_repertoire = document.createElement('canvas');
+          part_cause_repertoire.setAttribute('id', 'partCauseRepertoire');
+          part_rep_box.appendChild(part_cause_repertoire);
+          var ctx = part_cause_repertoire.getContext('2d');
+
           var chart = new Chart(ctx, {
             type: 'bar',
             data: {
